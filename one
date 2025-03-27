@@ -1,0 +1,141 @@
+Task:
+1. Using UNION write an SQL query to retrieve all unique product names from the Product table and customer names from the Customer table in a single list.
+
+2. Using Different Types of JOINS
+a) Write an SQL query using INNER JOIN to display sales transactions along with customer names and product names.
+b) Write an SQL query using LEFT JOIN to show all customers and their sales, including customers with no sales.
+c) Write an SQL query using RIGHT JOIN to show all products and their sales transactions, including products that have not been sold.
+d) Write an SQL query using FULL OUTER JOIN to display all sales transactions and customer details, ensuring that all records from both tables appear in the result.
+
+3. Using RANK() and DENSE_RANK()
+a) Write an SQL query to assign a RANK() to sales transactions based on sale_amount in descending order.
+b) Write an SQL query to assign a DENSE_RANK() to sales transactions based on sale_amount in descending order.
+c) Compare the results of RANK() and DENSE_RANK(). Explain the difference based on the result set.
+
+
+
+Solution:
+create database assignment;
+use assignment;
+
+-- Create tables
+create table customer (
+    customer_id int primary key,
+    customer_name varchar(50)
+);
+
+insert into customer (customer_id, customer_name) values
+(1, 'Alice'),
+(2, 'Bob'),
+(3, 'Charlie'),
+(4, 'David'),
+(5, 'Emma'),
+(6, 'Frank'),
+(7, 'Grace'),
+(8, 'Hannah'),
+(9, 'Isaac'),
+(10, 'Jack'),
+(11, 'Kelly'),
+(12, 'Liam'),
+(13, 'Mia'),
+(14, 'Nathan'),
+(15, 'Olivia');
+
+create table product (
+    product_id int primary key,
+    product_name varchar(50)
+);
+
+
+insert into product (product_id, product_name) values
+(1,'Laptop'),
+(2,'Smartphone'),
+(3,'Tablet'),
+(4,'Smartwatch'),
+(5,'Headphones'),
+(6,'Keyboard'),
+(7,'Mouse'),
+(8,'Monitor'),
+(9,'Printer'),
+(10,'Speakers');
+
+create table sales (
+    sale_id int primary key auto_increment,
+    customer_id int,
+    product_id int,
+    sale_amount int,
+    foreign key (customer_id) references customer(customer_id),
+    foreign key (product_id) references product(product_id)
+);
+
+
+insert into sales (customer_id, product_id, sale_amount) values
+(1, 1, 500),  -- Alice bought a Laptop
+(1, 2, 700),  -- Alice bought a Smartphone
+(2, 3, 300),  -- Bob bought a Tablet
+(3, 4, 200),  -- Charlie bought a Smartwatch
+(4, 5, 150),  -- David bought Headphones
+(5, 6, 100),  -- Emma bought a Keyboard
+(6, 7, 50),   -- Frank bought a Mouse
+(7, 8, 300),  -- Grace bought a Monitor
+(8, 9, 250),  -- Hannah bought a Printer
+(9, 10, 120); -- Isaac bought Speakers
+
+
+select * from customer;
+select * from product;
+select * from sales;
+
+-- Task Queries
+
+-- 1. UNION (Unique Product and Customer Names)
+select customer_name as name from customer 
+union 
+select product_name from product;
+
+-- 2a. INNER JOIN (Sales Transactions with Customer and Product Names)
+select sales.sale_id, customer.customer_name, product.product_name, sales.sale_amount
+from sales
+inner join customer on sales.customer_id = customer.customer_id
+inner join product on sales.product_id = product.product_id;
+
+-- 2b. LEFT JOIN (All Customers and Their Sales)
+select customer.customer_name, sales.sale_id, product.product_name, sales.sale_amount
+from customer
+left join sales on customer.customer_id = sales.customer_id
+left join product on sales.product_id = product.product_id;
+
+-- 2c. RIGHT JOIN (All Products and Their Sales)
+select product.product_name, sales.sale_id, customer.customer_name, sales.sale_amount
+from product
+right join sales on product.product_id = sales.product_id
+right join customer on sales.customer_id = customer.customer_id;
+
+-- 2d. FULL OUTER JOIN (All Customers and Sales)
+select customer.customer_name, sales.sale_id, product.product_name, sales.sale_amount
+from customer
+left join sales on customer.customer_id = sales.customer_id
+left join product on sales.product_id = product.product_id
+
+union
+
+select customer.customer_name, sales.sale_id, product.product_name, sales.sale_amount
+from product
+right join sales on product.product_id = sales.product_id
+right join customer on sales.customer_id = customer.customer_id;
+
+-- 3a. RANK() on Sales Transactions
+select sale_id, customer_id, product_id, sale_amount,
+       rank() over (order by sale_amount desc) as rank_value
+from sales;
+
+-- 3b. DENSE_RANK() on Sales Transactions
+select sale_id, customer_id, product_id, sale_amount,
+       dense_rank() over (order by sale_amount desc) as dense_rank_value
+from sales;
+
+-- 3c. Compare RANK() vs DENSE_RANK()
+select sale_id, customer_id, product_id, sale_amount,
+       rank() over (order by sale_amount desc) as rank_value,
+       dense_rank() over (order by sale_amount desc) as dense_rank_value
+from sales;
